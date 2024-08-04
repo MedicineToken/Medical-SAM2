@@ -122,14 +122,23 @@ def train_sam(args, net: nn.Module, optimizer, train_loader, epoch, writer):
 
             '''prompt encoder'''         
             with torch.no_grad():
+                if (ind%5) == 0:
+                    points=(coords_torch, labels_torch) # input shape: ((batch, n, 2), (batch, n))
+                    flag = True
+                else:
+                    points=None
+                    flag = False
+
                 se, de = net.sam_prompt_encoder(
-                    points=(coords_torch, labels_torch), # input shape: ((batch, n, 2), (batch, n))
+                    points=points, #(coords_torch, labels_torch)
                     boxes=None,
                     masks=None,
+                    batch_size=B,
                 )
             # dimension hint for your future use
             # se: torch.Size([batch, n+1, 256])
             # de: torch.Size([batch, 256, 64, 64])
+
 
 
             
@@ -162,7 +171,7 @@ def train_sam(args, net: nn.Module, optimizer, train_loader, epoch, writer):
                 current_vision_feats=vision_feats,
                 feat_sizes=feat_sizes,
                 pred_masks_high_res=high_res_multimasks,
-                is_mask_from_pts=True)  
+                is_mask_from_pts=flag)  
             # dimension hint for your future use
             # maskmem_features: torch.Size([batch, 64, 64, 64])
             # maskmem_pos_enc: [torch.Size([batch, 64, 64, 64])]
@@ -319,10 +328,19 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
                 high_res_feats = feats[:-1]
 
                 """ prompt encoder """
+                if (ind%5) == 0:
+                    flag = True
+                    points = (coords_torch, labels_torch)
+
+                else:
+                    flag = False
+                    points = None
+
                 se, de = net.sam_prompt_encoder(
-                    points=(coords_torch, labels_torch), 
+                    points=points, 
                     boxes=None,
                     masks=None,
+                    batch_size=B,
                 )
 
                 low_res_multimasks, iou_predictions, sam_output_tokens, object_score_logits = net.sam_mask_decoder(
@@ -345,7 +363,7 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
                     current_vision_feats=vision_feats,
                     feat_sizes=feat_sizes,
                     pred_masks_high_res=high_res_multimasks,
-                    is_mask_from_pts=True)  
+                    is_mask_from_pts=flag)  
                     
                 maskmem_features = maskmem_features.to(torch.bfloat16)
                 maskmem_features = maskmem_features.to(device=GPUdevice, non_blocking=True)
@@ -400,7 +418,7 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
                     for na in name:
                         img_name = na
                         namecat = namecat + img_name + '+'
-                    vis_image(imgs,pred, masks, os.path.join(args.path_helper['sample_path'], namecat+'epoch+' +str(epoch) + '.jpg'), reverse=False, points=pt_temp)
+                    vis_image(imgs,pred, masks, os.path.join(args.path_helper['sample_path'], namecat+'epoch+' +str(epoch) + '.jpg'), reverse=False, points=None)
                             
             pbar.update()
 
