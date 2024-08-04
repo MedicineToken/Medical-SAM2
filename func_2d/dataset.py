@@ -34,12 +34,12 @@ class REFUGE(Dataset):
         subfolder = self.subfolders[index]
         name = subfolder.split('/')[-1]
 
-        # # raw image and raters path
-        # img_path = os.path.join(subfolder, name + '_cropped.jpg')
-        # multi_rater_cup_path = [os.path.join(subfolder, name + '_seg_cup_' + str(i) + '_cropped.jpg') for i in range(1, 8)]
+        # raw image and raters path
+        img_path = os.path.join(subfolder, name + '_cropped.jpg')
+        multi_rater_cup_path = [os.path.join(subfolder, name + '_seg_cup_' + str(i) + '_cropped.jpg') for i in range(1, 8)]
 
-        img_path = os.path.join(subfolder, name + '.jpg')
-        multi_rater_cup_path = [os.path.join(subfolder, name + '_seg_cup_' + str(i) + '.png') for i in range(1, 8)]
+        # img_path = os.path.join(subfolder, name + '.jpg')
+        # multi_rater_cup_path = [os.path.join(subfolder, name + '_seg_cup_' + str(i) + '.png') for i in range(1, 8)]
 
         # raw image and rater images
         img = Image.open(img_path).convert('RGB')
