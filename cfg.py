@@ -21,10 +21,15 @@ def parse_args():
     parser.add_argument('-sam_ckpt', type=str, default=None , help='sam checkpoint address')
     parser.add_argument('-sam_config', type=str, default=None , help='sam checkpoint address')
     parser.add_argument('-video_length', type=int, default=2, help='sam checkpoint address')
+    parser.add_argument('-b', type=int, default=1, help='batch size for dataloader')
+    parser.add_argument('-lr', type=float, default=1e-4, help='initial learning rate')
+    parser.add_argument('-weights', type=str, default = 0, help='the weights file you want to test')
+    parser.add_argument('-multimask_output', type=int, default=1 , help='the number of masks output for multi-class segmentation')
+    parser.add_argument('-memory_bank_size', type=int, default=16, help='sam 2d memory bank size')
     parser.add_argument(
     '-data_path',
     type=str,
-    default='./dataset/btcv',
+    default='./data/btcv',
     help='The path of segmentation data')
     opt = parser.parse_args()
 

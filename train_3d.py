@@ -13,10 +13,10 @@ import torch.optim as optim
 from tensorboardX import SummaryWriter
 
 import cfg
-import function
+from func_3d import function
 from conf import settings
-from utils import get_network, set_log_dir, create_logger
-from dataset import get_dataloader
+from func_3d.utils import get_network, set_log_dir, create_logger
+from func_3d.dataset import get_dataloader
 
 def main():
 

@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 import cfg
 from conf import settings
-from utils import eval_seg
+from func_3d.utils import eval_seg
 
 args = cfg.parse_args()
 
