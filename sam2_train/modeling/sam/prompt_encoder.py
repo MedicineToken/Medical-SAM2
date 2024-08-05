@@ -142,7 +142,7 @@ class PromptEncoder(nn.Module):
         points: Optional[Tuple[torch.Tensor, torch.Tensor]],
         boxes: Optional[torch.Tensor],
         masks: Optional[torch.Tensor],
-        batch_size: Optional[int],
+        batch_size = -1,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Embeds different types of prompts, returning both sparse and dense
@@ -161,8 +161,9 @@ class PromptEncoder(nn.Module):
           torch.Tensor: dense embeddings for the masks, in the shape
             Bx(embed_dim)x(embed_H)x(embed_W)
         """
-        bs = self._get_batch_size(points, boxes, masks)
-        if bs is not None:
+        if batch_size == -1:
+            bs = self._get_batch_size(points, boxes, masks)
+        else:
             bs = batch_size
         sparse_embeddings = torch.empty(
             (bs, 0, self.embed_dim), device=self._get_device()

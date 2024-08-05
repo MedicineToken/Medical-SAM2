@@ -7,7 +7,7 @@ from PIL import Image
 import nibabel as nib
 from torch.utils.data import Dataset
 
-from utils import random_click, generate_bbox
+from func_3d.utils import random_click, generate_bbox
 
 
 class AMOS(Dataset):
