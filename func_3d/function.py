@@ -88,9 +88,8 @@ def train_sam(args, net: nn.Module, optimizer1, optimizer2, train_loader,
             for id in prompt_frame_id:
                 obj_list += list(mask_dict[id].keys())
             obj_list = list(set(obj_list))
-            for frm_k, frm_v in mask_dict.items():
-                for obj_k,obj_v in frm_v.items():
-                    mask_dict[frm_k][obj_k] = obj_v.to(dtype = torch.float32, device = GPUdevice)
+            if len(obj_list) == 0:
+                continue
 
             name = pack['image_meta_dict']['filename_or_obj']
             # reverse = np.random.rand() > 0.5
@@ -98,23 +97,19 @@ def train_sam(args, net: nn.Module, optimizer1, optimizer2, train_loader,
             with torch.cuda.amp.autocast():
                 for id in prompt_frame_id:
                     for ann_obj_id in obj_list:
-                        if prompt == 'click':
-                            try:
+                        try:
+                            if prompt == 'click':
                                 points = pt_dict[id][ann_obj_id].to(device=GPUdevice)
                                 labels = point_labels_dict[id][ann_obj_id].to(device=GPUdevice)
-                            except KeyError:
-                                points = torch.zeros((1, 2)).to(device=GPUdevice)
-                                labels = torch.zeros((1,)).to(device=GPUdevice)
-                            _, _, _ = net.train_add_new_points(
-                                inference_state=train_state,
-                                frame_idx=id,
-                                obj_id=ann_obj_id,
-                                points=points,
-                                labels=labels,
-                                clear_old_points=False,
-                            )
-                        elif prompt == 'bbox':
-                            try:
+                                _, _, _ = net.train_add_new_points(
+                                    inference_state=train_state,
+                                    frame_idx=id,
+                                    obj_id=ann_obj_id,
+                                    points=points,
+                                    labels=labels,
+                                    clear_old_points=False,
+                                )
+                            elif prompt == 'bbox':
                                 bbox = bbox_dict[id][ann_obj_id]
                                 _, _, _ = net.train_add_new_bbox(
                                     inference_state=train_state,
@@ -123,13 +118,13 @@ def train_sam(args, net: nn.Module, optimizer1, optimizer2, train_loader,
                                     bbox=bbox.to(device=GPUdevice),
                                     clear_old_points=False,
                                 )
-                            except KeyError:
-                                _, _, _ = net.train_add_new_mask(
-                                    inference_state=train_state,
-                                    frame_idx=id,
-                                    obj_id=ann_obj_id,
-                                    mask = torch.zeros(imgs_tensor.shape[2:]).to(device=GPUdevice),
-                                )
+                        except KeyError:
+                            _, _, _ = net.train_add_new_mask(
+                                inference_state=train_state,
+                                frame_idx=id,
+                                obj_id=ann_obj_id,
+                                mask = torch.zeros(imgs_tensor.shape[2:]).to(device=GPUdevice),
+                            )
                 video_segments = {}  # video_segments contains the per-frame segmentation results
             
                 for out_frame_idx, out_obj_ids, out_mask_logits in net.train_propagate_in_video(train_state, start_frame_idx=0):
@@ -147,7 +142,7 @@ def train_sam(args, net: nn.Module, optimizer1, optimizer2, train_loader,
                         pred = pred.unsqueeze(0)
                         # pred = torch.sigmoid(pred)
                         try:
-                            mask = mask_dict[id][ann_obj_id]
+                            mask = mask_dict[id][ann_obj_id].to(dtype = torch.float32, device = GPUdevice)
                         except KeyError:
                             mask = torch.zeros_like(pred).to(device=GPUdevice)
                         if args.train_vis:
@@ -234,29 +229,27 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
             for id in frame_id:
                 obj_list += list(mask_dict[id].keys())
             obj_list = list(set(obj_list))
-
-            for frm_k, frm_v in mask_dict.items():
-                for obj_k,obj_v in frm_v.items():
-                    mask_dict[frm_k][obj_k] = obj_v.to(dtype = torch.float32, device = GPUdevice)
+            if len(obj_list) == 0:
+                continue
 
             name = pack['image_meta_dict']['filename_or_obj']
 
             with torch.no_grad():
                 for id in prompt_frame_id:
                     for ann_obj_id in obj_list:
-                        if prompt == 'click':
-                            points = pt_dict[id][ann_obj_id].to(device=GPUdevice)
-                            labels = point_labels_dict[id][ann_obj_id].to(device=GPUdevice)
-                            _, _, _ = net.add_new_points(
-                                inference_state=train_state,
-                                frame_idx=id,
-                                obj_id=ann_obj_id,
-                                points=points,
-                                labels=labels,
-                                clear_old_points=False,
-                            )
-                        elif prompt == 'bbox':
-                            try:
+                        try:
+                            if prompt == 'click':
+                                points = pt_dict[id][ann_obj_id].to(device=GPUdevice)
+                                labels = point_labels_dict[id][ann_obj_id].to(device=GPUdevice)
+                                _, _, _ = net.train_add_new_points(
+                                    inference_state=train_state,
+                                    frame_idx=id,
+                                    obj_id=ann_obj_id,
+                                    points=points,
+                                    labels=labels,
+                                    clear_old_points=False,
+                                )
+                            elif prompt == 'bbox':
                                 bbox = bbox_dict[id][ann_obj_id]
                                 _, _, _ = net.train_add_new_bbox(
                                     inference_state=train_state,
@@ -265,13 +258,13 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
                                     bbox=bbox.to(device=GPUdevice),
                                     clear_old_points=False,
                                 )
-                            except KeyError:
-                                _, _, _ = net.train_add_new_mask(
-                                    inference_state=train_state,
-                                    frame_idx=id,
-                                    obj_id=ann_obj_id,
-                                    mask = torch.zeros(imgs_tensor.shape[2:]).to(device=GPUdevice),
-                                )
+                        except KeyError:
+                            _, _, _ = net.train_add_new_mask(
+                                inference_state=train_state,
+                                frame_idx=id,
+                                obj_id=ann_obj_id,
+                                mask = torch.zeros(imgs_tensor.shape[2:]).to(device=GPUdevice),
+                            )
                 video_segments = {}  # video_segments contains the per-frame segmentation results
             
                 for out_frame_idx, out_obj_ids, out_mask_logits in net.propagate_in_video(train_state, start_frame_idx=0):
@@ -289,7 +282,7 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
                         pred = pred.unsqueeze(0)
                         # pred = torch.sigmoid(pred)
                         try:
-                            mask = mask_dict[id][ann_obj_id]
+                            mask = mask_dict[id][ann_obj_id].to(dtype = torch.float32, device = GPUdevice)
                         except KeyError:
                             mask = torch.zeros_like(pred).to(device=GPUdevice)
                         if args.vis:
