@@ -32,21 +32,33 @@ image segmentation tasks. This method is elaborated on the paper [Medical SAM 2:
  
  ### 2D case - REFUGE Optic-cup Segmentation from Fundus Images
 
-**Step1:** Dowaload [REFUGE](https://refuge.grand-challenge.org/) dataset manually from [here](https://huggingface.co/datasets/jiayuanz3/REFUGE/tree/main), or using command lines:
+**Step1:** Dowaload pre-processed [REFUGE](https://refuge.grand-challenge.org/) dataset manually from [here](https://huggingface.co/datasets/jiayuanz3/REFUGE/tree/main), or using command lines:
 
  ``wget https://huggingface.co/datasets/jiayuanz3/REFUGE/resolve/main/REFUGE.zip``
 
  ``unzip REFUGE.zip``
 
  **Step2:** Run the training and validation by:
+ 
 ``python train_2d.py -net sam2 -exp_name REFUGE_MedSAM2 -vis 1 -sam_ckpt ./checkpoints/sam2_hiera_small.pt -sam_config sam2_hiera_s -image_size 1024 -out_size 1024 -b 4 -val_freq 1 -dataset REFUGE -data_path ./data/REFUGE``
 
- ### 3D case
+ ### 3D case - Abdominal Multiple Organs Segmentation
+ 
+ **Step1:** Dowaload pre-processed [BTCV](https://www.synapse.org/#!Synapse:syn3193805/wiki/217752) dataset manually from [here](https://huggingface.co/datasets/jiayuanz3/btcv/tree/main), or using command lines:
+
+ ``wget https://huggingface.co/datasets/jiayuanz3/btcv/resolve/main/btcv.zip``
+
+ ``unzip btcv.zip``
+
+**Step2:** Run the training and validation by:
+
+
  ``python train_3d.py -net sam2 -exp_name BTCV_MedSAM2 -sam_ckpt ./checkpoints/sam2_hiera_small.pt -sam_config sam2_hiera_s -image_size 1024 -val_freq 1 -prompt bbox -prompt_freq 2 -dataset btcv -data_path ./data/btcv``
 
 
 ## 🚨 News
-- 24-08-05. Update 2D example details and REFUGE dataset download link 🔗
+- 24-08-05. Update 3D example details and pre-processed BTCV dataset download link 🔗
+- 24-08-05. Update 2D example details and pre-processed REFUGE dataset download link 🔗
 - 24-08-05. Our Medical SAM 2 paper was available online 🥳
 - 24-08-05. Our Medical SAM 2 code was available on Github 🥳
 - 24-07-30. The SAM 2 model was released 🤩
