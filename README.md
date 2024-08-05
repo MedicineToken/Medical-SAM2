@@ -43,3 +43,15 @@ image segmentation tasks. This method is elaborated on the paper [Medical SAM 2:
 - 24-08-05. Our Medical SAM 2 paper was available online 🥳
 - 24-08-05. Our Medical SAM 2 code was available on Github 🥳
 - 24-07-30. The SAM 2 model was released 🤩
+
+## 📝 Cite
+ ~~~
+@misc{zhu_medical_2024,
+	title={Medical SAM 2: Segment medical images as video via Segment Anything Model 2},
+    author={Jiayuan Zhu and Yunli Qi and Junde Wu},
+    year = {2024},
+    eprint={2408.00874},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}
+ ~~~
