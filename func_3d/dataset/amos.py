@@ -14,14 +14,7 @@ class AMOS(Dataset):
     def __init__(self, args, data_path , transform = None, transform_msk = None, mode = 'Training',prompt = 'click', seed=None, variation=0):
 
         # Set the data list for training
-        self.video_length = args.video_length
-        name_list = []
-        for img_name in os.listdir(os.path.join(data_path, mode, 'image')):
-            max_frame = len(os.listdir(os.path.join(data_path, mode, 'image', img_name))) - self.video_length
-            for frame_name in os.listdir(os.path.join(data_path, mode, 'image', img_name)):
-                if int(frame_name.split('.')[0]) <= max_frame:
-                    name_list.append(os.path.join(data_path, mode, 'image', img_name, frame_name))
-        self.name_list = name_list
+        self.name_list = os.listdir(os.path.join(data_path, mode, 'image'))
         
         # Set the basic information of the dataset
         self.data_path = data_path
@@ -32,10 +25,10 @@ class AMOS(Dataset):
         self.transform_msk = transform_msk
         self.seed = seed
         self.variation = variation
-        # if mode == 'Training':
-        #     self.video_length = args.video_length
-        # else:
-        #     self.video_length = None
+        if mode == 'Training':
+            self.video_length = args.video_length
+        else:
+            self.video_length = None
 
     def __len__(self):
         return len(self.name_list)
@@ -45,44 +38,41 @@ class AMOS(Dataset):
         newsize = (self.img_size, self.img_size)
 
         """Get the images"""
-        img_path = self.name_list[index]
-        mask_path = '/'.join(img_path.replace('image', 'mask').split('/')[:-1])
-        # data_seg_3d_shape = np.load(mask_path + '/0.npy').shape
-        # num_frame = len(os.listdir(mask_path))
-        # data_seg_3d = np.zeros(data_seg_3d_shape + (num_frame,))
-        # for i in range(num_frame):
-        #     data_seg_3d[..., i] = np.load(os.path.join(mask_path, f'{i}.npy'))
-        # for i in range(data_seg_3d.shape[-1]):
-        #     if np.sum(data_seg_3d[..., i]) > 0:
-        #         data_seg_3d = data_seg_3d[..., i:]
-        #         break
-        # starting_frame_nonzero = i
-        # for j in reversed(range(data_seg_3d.shape[-1])):
-        #     if np.sum(data_seg_3d[..., j]) > 0:
-        #         data_seg_3d = data_seg_3d[..., :j+1]
-        #         break
-        # num_frame = data_seg_3d.shape[-1]
-        # if self.video_length is None:
-        #     video_length = int(num_frame / 4)
-        # else:
-        #     video_length = self.video_length
-        # if num_frame > video_length and self.mode == 'Training':
-        #     starting_frame = np.random.randint(0, num_frame - video_length + 1)
-        # else:
-        #     starting_frame = 0
-        video_length = self.video_length
+        name = self.name_list[index]
+        img_path = os.path.join(self.data_path, self.mode, 'image', name)
+        mask_path = os.path.join(self.data_path, self.mode, 'mask', name)
+        data_seg_3d_shape = np.load(mask_path + '/0.npy').shape
+        num_frame = len(os.listdir(mask_path))
+        data_seg_3d = np.zeros(data_seg_3d_shape + (num_frame,))
+        for i in range(num_frame):
+            data_seg_3d[..., i] = np.load(os.path.join(mask_path, f'{i}.npy'))
+        for i in range(data_seg_3d.shape[-1]):
+            if np.sum(data_seg_3d[..., i]) > 0:
+                data_seg_3d = data_seg_3d[..., i:]
+                break
+        starting_frame_nonzero = i
+        for j in reversed(range(data_seg_3d.shape[-1])):
+            if np.sum(data_seg_3d[..., j]) > 0:
+                data_seg_3d = data_seg_3d[..., :j+1]
+                break
+        num_frame = data_seg_3d.shape[-1]
+        if self.video_length is None:
+            video_length = int(num_frame / 4)
+        else:
+            video_length = self.video_length
+        if num_frame > video_length and self.mode == 'Training':
+            starting_frame = np.random.randint(0, num_frame - video_length + 1)
+        else:
+            starting_frame = 0
         img_tensor = torch.zeros(video_length, 3, self.img_size, self.img_size)
         mask_dict = {}
         point_label_dict = {}
         pt_dict = {}
         bbox_dict = {}
-        starting_frame = int(img_path.split('/')[-1].split('.')[0])
 
         for frame_index in range(starting_frame, starting_frame + video_length):
-            frame_img_path = os.path.join('/'.join(img_path.split('/')[:-1]), f'{frame_index}.jpg')
-            img = Image.open(frame_img_path).convert('RGB')
-            frame_mask_path = os.path.join(mask_path, f'{frame_index}.npy')
-            mask = np.load(frame_mask_path)
+            img = Image.open(os.path.join(img_path, f'{frame_index + starting_frame_nonzero}.jpg')).convert('RGB')
+            mask = data_seg_3d[..., frame_index]
             # mask = np.rot90(mask)
             obj_list = np.unique(mask[mask > 0])
             diff_obj_mask_dict = {}
@@ -119,7 +109,7 @@ class AMOS(Dataset):
                 point_label_dict[frame_index - starting_frame] = diff_obj_point_label_dict
 
 
-        image_meta_dict = {'filename_or_obj':mask_path.split('/')[-1]}
+        image_meta_dict = {'filename_or_obj':name}
         if self.prompt == 'bbox':
             return {
                 'image':img_tensor,
