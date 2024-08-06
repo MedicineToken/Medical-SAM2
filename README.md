@@ -57,6 +57,7 @@ image segmentation tasks. This method is elaborated on the paper [Medical SAM 2:
 
 
 ## 🚨 News
+- 24-08-05. Our Medical SAM 2 paper **ranked #1 Paper of the day** collected by AK on Hugging Face
 - 24-08-05. Update 3D example details and pre-processed BTCV dataset download link 🔗
 - 24-08-05. Update 2D example details and pre-processed REFUGE dataset download link 🔗
 - 24-08-05. Our Medical SAM 2 paper was available online 🥳
