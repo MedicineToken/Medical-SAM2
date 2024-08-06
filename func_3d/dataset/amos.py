@@ -85,20 +85,23 @@ class AMOS(Dataset):
                 raise ValueError('Prompt not recognized')
             for obj in obj_list:
                 obj_mask = mask == obj
-                if self.transform_msk:
-                    obj_mask = Image.fromarray(obj_mask)
-                    obj_mask = obj_mask.resize(newsize)
-                    obj_mask = self.transform_msk(obj_mask).int()
+                # if self.transform_msk:
+                obj_mask = Image.fromarray(obj_mask)
+                obj_mask = obj_mask.resize(newsize)
+                obj_mask = torch.tensor(np.array(obj_mask)).unsqueeze(0).int()
+                    # obj_mask = self.transform_msk(obj_mask).int()
                 diff_obj_mask_dict[obj] = obj_mask
 
                 if self.prompt == 'click':
                     diff_obj_point_label_dict[obj], diff_obj_pt_dict[obj] = random_click(np.array(obj_mask.squeeze(0)), point_label, seed=None)
                 if self.prompt == 'bbox':
                     diff_obj_bbox_dict[obj] = generate_bbox(np.array(obj_mask.squeeze(0)), variation=self.variation, seed=self.seed)
-            if self.transform:
+            # if self.transform:
                 # state = torch.get_rng_state()
-                img = self.transform(img)
+                # img = self.transform(img)
                 # torch.set_rng_state(state)
+            img = img.resize(newsize)
+            img = torch.tensor(np.array(img)).permute(2, 0, 1)
 
             img_tensor[frame_index - starting_frame, :, :, :] = img
             mask_dict[frame_index - starting_frame] = diff_obj_mask_dict
