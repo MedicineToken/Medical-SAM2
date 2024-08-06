@@ -170,7 +170,7 @@ dependencies:
       - pyparsing==3.1.2
       - python-dateutil==2.9.0.post0
       - python-gdcm==3.0.24.1
-      - python-graphviz==0.20.3
+      - graphviz==0.20.3
       - python-json-logger==2.0.7
       - pytz==2024.1
       - pyyaml==6.0.1
@@ -179,7 +179,6 @@ dependencies:
       - rfc3339-validator==0.1.4
       - rfc3986-validator==0.1.1
       - rpds-py==0.19.1
-      - sam-2==1.0
       - scikit-image==0.24.0
       - scikit-learn==1.5.1
       - scipy==1.14.0
