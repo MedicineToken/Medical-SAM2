@@ -103,7 +103,7 @@ def main():
             
             logger.info(f'Total score: {tol}, IOU: {eiou}, DICE: {edice} || @ epoch {epoch}.')
 
-            torch.save(net.state_dict(), os.path.join(args.path_helper['ckpt_path'], 'latest_epoch.pth'))
+            torch.save({'model': net.state_dict()}, os.path.join(args.path_helper['ckpt_path'], 'latest_epoch.pth'))
 
     writer.close()
 
