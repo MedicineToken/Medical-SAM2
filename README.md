@@ -33,6 +33,7 @@ Operating System: Ubuntu 22.04
 Conda Version: 23.7.4
 Python Version: 3.12.4
 ```
+We released our pretrain weight [here](https://huggingface.co/jiayuanz3/MedSAM2_pretrain/tree/main)
 
  ## 🎯 Example Cases
  #### Download REFUGE or BCTV or youn own dataset and put in the ``data`` folder, creat the folder if it does not exist ⚒️
