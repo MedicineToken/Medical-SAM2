@@ -37,31 +37,12 @@ def main():
     GPUdevice = torch.device('cuda', args.gpu_device)
 
     net = get_network(args, args.net, use_gpu=args.gpu, gpu_device=GPUdevice, distribution = args.distributed)
-    if args.pretrain:
-        weights = torch.load(args.pretrain)
-        net.load_state_dict(weights,strict=False)
 
     # optimisation
     optimizer = optim.Adam(net.parameters(), lr=args.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5) 
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.5) 
 
     '''load pretrained model'''
-    if args.weights != 0:
-        print(f'=> resuming from {args.weights}')
-        assert os.path.exists(args.weights)
-        checkpoint_file = os.path.join(args.weights)
-        assert os.path.exists(checkpoint_file)
-        loc = 'cuda:{}'.format(args.gpu_device)
-        checkpoint = torch.load(checkpoint_file, map_location=loc)
-        start_epoch = checkpoint['epoch']
-        best_tol = checkpoint['best_tol']
-
-        net.load_state_dict(checkpoint['state_dict'],strict=False)
-        # optimizer.load_state_dict(checkpoint['optimizer'], strict=False)
-
-        args.path_helper = checkpoint['path_helper']
-        logger = create_logger(args.path_helper['log_path'])
-        print(f'=> loaded checkpoint {checkpoint_file} (epoch {start_epoch})')
 
     args.path_helper = set_log_dir('logs', args.exp_name)
     logger = create_logger(args.path_helper['log_path'])
@@ -127,28 +108,8 @@ def main():
             tol, (eiou, edice) = function.validation_sam(args, nice_test_loader, epoch, net, writer)
             logger.info(f'Total score: {tol}, IOU: {eiou}, DICE: {edice} || @ epoch {epoch}.')
 
-            if args.distributed != 'none':
-                sd = net.module.state_dict()
-            else:
-                sd = net.state_dict()
+            torch.save({'model': net.state_dict()}, os.path.join(args.path_helper['ckpt_path'], 'latest_epoch.pth'))
 
-            #if edice > best_dice:
-            if  edice > best_dice:
-                best_dice = edice
-                best_tol = tol
-                is_best = True
-
-                save_checkpoint({
-                'epoch': epoch + 1,
-                'model': args.net,
-                'state_dict': sd,
-                'optimizer': optimizer.state_dict(),
-                'best_dice': best_dice,
-                'best_tol': best_tol,
-                'path_helper': args.path_helper,
-            }, is_best, args.path_helper['ckpt_path'], filename="best_dice_checkpoint.pth")
-            else:
-                is_best = False
 
     writer.close()
 
