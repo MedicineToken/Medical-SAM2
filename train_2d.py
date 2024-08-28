@@ -93,6 +93,9 @@ def main():
 
     for epoch in range(settings.EPOCH):
 
+        tol, (eiou, edice) = function.validation_sam(args, nice_test_loader, epoch, net, writer)
+        logger.info(f'Total score: {tol}, IOU: {eiou}, DICE: {edice} || @ epoch {epoch}.')
+
         # training
         net.train()
         time_start = time.time()
@@ -108,7 +111,9 @@ def main():
             tol, (eiou, edice) = function.validation_sam(args, nice_test_loader, epoch, net, writer)
             logger.info(f'Total score: {tol}, IOU: {eiou}, DICE: {edice} || @ epoch {epoch}.')
 
-            torch.save({'model': net.state_dict()}, os.path.join(args.path_helper['ckpt_path'], 'latest_epoch.pth'))
+            if edice > best_dice:
+                best_dice = edice
+                torch.save({'model': net.state_dict(), 'parameter': net._parameters}, os.path.join(args.path_helper['ckpt_path'], 'latest_epoch.pth'))
 
 
     writer.close()
