@@ -93,8 +93,9 @@ def main():
 
     for epoch in range(settings.EPOCH):
 
-        tol, (eiou, edice) = function.validation_sam(args, nice_test_loader, epoch, net, writer)
-        logger.info(f'Total score: {tol}, IOU: {eiou}, DICE: {edice} || @ epoch {epoch}.')
+        if epoch == 0:
+            tol, (eiou, edice) = function.validation_sam(args, nice_test_loader, epoch, net, writer)
+            logger.info(f'Total score: {tol}, IOU: {eiou}, DICE: {edice} || @ epoch {epoch}.')
 
         # training
         net.train()
