@@ -148,7 +148,7 @@ def train_sam(args, net: nn.Module, optimizer1, optimizer2, train_loader,
                         if args.train_vis:
                             os.makedirs(f'./temp/train/{name[0]}/{id}', exist_ok=True)
                             fig, ax = plt.subplots(1, 3)
-                            ax[0].imshow(imgs_tensor[id, :, :, :].detach().cpu().permute(1, 2, 0).numpy())
+                            ax[0].imshow(imgs_tensor[id, :, :, :].detach().cpu().permute(1, 2, 0).numpy().astype(int))
                             ax[0].axis('off')
                             ax[1].imshow(pred[0, 0, :, :].detach().cpu().numpy() > 0.5, cmap='gray')
                             ax[1].axis('off')
@@ -288,7 +288,7 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
                         if args.vis:
                             os.makedirs(f'./temp/val/{name[0]}/{id}', exist_ok=True)
                             fig, ax = plt.subplots(1, 3)
-                            ax[0].imshow(imgs_tensor[id, :, :, :].cpu().permute(1, 2, 0).numpy())
+                            ax[0].imshow(imgs_tensor[id, :, :, :].cpu().permute(1, 2, 0).numpy().astype(int))
                             ax[0].axis('off')
                             ax[1].imshow(pred[0, 0, :, :].cpu().numpy() > 0.5, cmap='gray')
                             ax[1].axis('off')
