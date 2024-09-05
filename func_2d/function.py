@@ -49,6 +49,7 @@ def train_sam(args, net: nn.Module, optimizer, train_loader, epoch, writer):
             
             to_cat_memory = []
             to_cat_memory_pos = []
+            to_cat_image_embed = []
 
             # input image and gt masks
             imgs = pack['image'].to(dtype = mask_type, device = GPUdevice)
@@ -92,12 +93,27 @@ def train_sam(args, net: nn.Module, optimizer, train_loader, epoch, writer):
                 for element in memory_bank_list:
                     to_cat_memory.append((element[0]).cuda(non_blocking=True).flatten(2).permute(2, 0, 1)) # maskmem_features
                     to_cat_memory_pos.append((element[1]).cuda(non_blocking=True).flatten(2).permute(2, 0, 1)) # maskmem_pos_enc
-                memory = torch.cat(to_cat_memory, dim=0)
-                memory_pos = torch.cat(to_cat_memory_pos, dim=0)
+                    to_cat_image_embed.append((element[3]).cuda(non_blocking=True)) # image_embed
 
+                memory_stack_ori = torch.stack(to_cat_memory, dim=0)
+                memory_pos_stack_ori = torch.stack(to_cat_memory_pos, dim=0)
+                image_embed_stack_ori = torch.stack(to_cat_image_embed, dim=0)
+ 
+                vision_feats_temp = vision_feats[-1].permute(1, 0, 2).view(B, -1, 64, 64) 
+                vision_feats_temp = vision_feats_temp.reshape(B, -1)
+
+                image_embed_stack_ori = F.normalize(image_embed_stack_ori, p=2, dim=1)
+                vision_feats_temp = F.normalize(vision_feats_temp, p=2, dim=1)
+                similarity_scores = torch.mm(image_embed_stack_ori, vision_feats_temp.t()).t()
                 
-                memory = memory.repeat(1, B, 1) 
-                memory_pos = memory_pos.repeat(1, B, 1) 
+                similarity_scores = F.softmax(similarity_scores, dim=1) 
+                sampled_indices = torch.multinomial(similarity_scores, num_samples=B, replacement=True).squeeze(1)  # Shape [batch_size, 16]
+
+                memory_stack_ori_new = (memory_stack_ori[sampled_indices].squeeze(3).permute(1, 2, 0, 3))
+                memory = memory_stack_ori_new.reshape(-1, memory_stack_ori_new.size(2), memory_stack_ori_new.size(3))
+
+                memory_pos_stack_new = (memory_pos_stack_ori[sampled_indices].squeeze(3).permute(1, 2, 0, 3))
+                memory_pos = memory_pos_stack_new.reshape(-1, memory_stack_ori_new.size(2), memory_stack_ori_new.size(3))
 
 
                 vision_feats[-1] = net.memory_attention(
@@ -187,7 +203,8 @@ def train_sam(args, net: nn.Module, optimizer, train_loader, epoch, writer):
                 for batch in range(maskmem_features.size(0)):
                     memory_bank_list.append([(maskmem_features[batch].unsqueeze(0)).detach(),
                                              (maskmem_pos_enc[batch].unsqueeze(0)).detach(),
-                                             iou_predictions[batch, 0]])
+                                             iou_predictions[batch, 0],
+                                             image_embed[batch].reshape(-1).detach()])
             
             else:
                 for batch in range(maskmem_features.size(0)):
@@ -219,7 +236,8 @@ def train_sam(args, net: nn.Module, optimizer, train_loader, epoch, writer):
                             memory_bank_list.pop(max_similarity_index) 
                             memory_bank_list.append([(maskmem_features[batch].unsqueeze(0)).detach(),
                                                      (maskmem_pos_enc[batch].unsqueeze(0)).detach(),
-                                                     iou_predictions[batch, 0]])
+                                                     iou_predictions[batch, 0],
+                                                     image_embed[batch].reshape(-1).detach()])
 
             # backpropagation
             loss = lossfunc(pred, masks)
@@ -269,6 +287,7 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
         for ind, pack in enumerate(val_loader):
             to_cat_memory = []
             to_cat_memory_pos = []
+            to_cat_image_embed = []
 
             name = pack['image_meta_dict']['filename_or_obj']
             imgs = pack['image'].to(dtype = torch.float32, device = GPUdevice)
@@ -307,11 +326,29 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
                         maskmem_pos_enc = element[1]
                         to_cat_memory.append(maskmem_features.cuda(non_blocking=True).flatten(2).permute(2, 0, 1))
                         to_cat_memory_pos.append(maskmem_pos_enc.cuda(non_blocking=True).flatten(2).permute(2, 0, 1))
-                    memory = torch.cat(to_cat_memory, dim=0)
-                    memory_pos = torch.cat(to_cat_memory_pos, dim=0)
+                        to_cat_image_embed.append((element[3]).cuda(non_blocking=True)) # image_embed
+                        
+                    memory_stack_ori = torch.stack(to_cat_memory, dim=0)
+                    memory_pos_stack_ori = torch.stack(to_cat_memory_pos, dim=0)
+                    image_embed_stack_ori = torch.stack(to_cat_image_embed, dim=0)
 
-                    memory = memory.repeat(1, B, 1) 
-                    memory_pos = memory_pos.repeat(1, B, 1) 
+                    vision_feats_temp = vision_feats[-1].permute(1, 0, 2).view(B, -1, 64, 64) 
+                    vision_feats_temp = vision_feats_temp.reshape(B, -1)
+
+                    image_embed_stack_ori = F.normalize(image_embed_stack_ori, p=2, dim=1)
+                    vision_feats_temp = F.normalize(vision_feats_temp, p=2, dim=1)
+                    similarity_scores = torch.mm(image_embed_stack_ori, vision_feats_temp.t()).t()
+
+                    similarity_scores = F.softmax(similarity_scores, dim=1) 
+                    sampled_indices = torch.multinomial(similarity_scores, num_samples=B, replacement=True).squeeze(1)  # Shape [batch_size, 16]
+
+                    memory_stack_ori_new = (memory_stack_ori[sampled_indices].squeeze(3).permute(1, 2, 0, 3))
+                    memory = memory_stack_ori_new.reshape(-1, memory_stack_ori_new.size(2), memory_stack_ori_new.size(3))
+
+                    memory_pos_stack_new = (memory_pos_stack_ori[sampled_indices].squeeze(3).permute(1, 2, 0, 3))
+                    memory_pos = memory_pos_stack_new.reshape(-1, memory_stack_ori_new.size(2), memory_stack_ori_new.size(3))
+
+
 
                     vision_feats[-1] = net.memory_attention(
                         curr=[vision_feats[-1]],
@@ -376,7 +413,8 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
                     for batch in range(maskmem_features.size(0)):
                         memory_bank_list.append([(maskmem_features[batch].unsqueeze(0)),
                                                  (maskmem_pos_enc[batch].unsqueeze(0)),
-                                                 iou_predictions[batch, 0]])
+                                                 iou_predictions[batch, 0],
+                                                 image_embed[batch].reshape(-1).detach()])
                 
                 else:
                     for batch in range(maskmem_features.size(0)):
@@ -402,8 +440,8 @@ def validation_sam(args, val_loader, epoch, net: nn.Module, clean_dir=True):
                                 memory_bank_list.pop(max_similarity_index) 
                                 memory_bank_list.append([(maskmem_features[batch].unsqueeze(0)),
                                                          (maskmem_pos_enc[batch].unsqueeze(0)),
-                                                         iou_predictions[batch, 0]])
-
+                                                         iou_predictions[batch, 0],
+                                                         image_embed[batch].reshape(-1).detach()])
 
                 # binary mask and calculate loss, iou, dice
                 total_loss += lossfunc(pred, masks)
