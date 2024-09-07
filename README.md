@@ -36,11 +36,11 @@ Python Version: 3.12.4
 We released our pretrain weight [here](https://huggingface.co/jiayuanz3/MedSAM2_pretrain/tree/main)
 
  ## 🎯 Example Cases
- #### Download REFUGE or BCTV or youn own dataset and put in the ``data`` folder, creat the folder if it does not exist ⚒️
+ #### Download REFUGE or BCTV or your own dataset and put in the ``data`` folder, create the folder if it does not exist ⚒️
  
  ### 2D case - REFUGE Optic-cup Segmentation from Fundus Images
 
-**Step1:** Dowaload pre-processed [REFUGE](https://refuge.grand-challenge.org/) dataset manually from [here](https://huggingface.co/datasets/jiayuanz3/REFUGE/tree/main), or using command lines:
+**Step1:** Download pre-processed [REFUGE](https://refuge.grand-challenge.org/) dataset manually from [here](https://huggingface.co/datasets/jiayuanz3/REFUGE/tree/main), or using command lines:
 
  ``wget https://huggingface.co/datasets/jiayuanz3/REFUGE/resolve/main/REFUGE.zip``
 
@@ -52,7 +52,7 @@ We released our pretrain weight [here](https://huggingface.co/jiayuanz3/MedSAM2_
 
  ### 3D case - Abdominal Multiple Organs Segmentation
  
- **Step1:** Dowaload pre-processed [BTCV](https://www.synapse.org/#!Synapse:syn3193805/wiki/217752) dataset manually from [here](https://huggingface.co/datasets/jiayuanz3/btcv/tree/main), or using command lines:
+ **Step1:** Download pre-processed [BTCV](https://www.synapse.org/#!Synapse:syn3193805/wiki/217752) dataset manually from [here](https://huggingface.co/datasets/jiayuanz3/btcv/tree/main), or using command lines:
 
  ``wget https://huggingface.co/datasets/jiayuanz3/btcv/resolve/main/btcv.zip``
 
