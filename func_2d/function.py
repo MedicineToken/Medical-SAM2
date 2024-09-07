@@ -99,7 +99,7 @@ def train_sam(args, net: nn.Module, optimizer, train_loader, epoch, writer):
                 memory_pos_stack_ori = torch.stack(to_cat_memory_pos, dim=0)
                 image_embed_stack_ori = torch.stack(to_cat_image_embed, dim=0)
  
-                vision_feats_temp = vision_feats[-1].permute(1, 0, 2).view(B, -1, 64, 64) 
+                vision_feats_temp = vision_feats[-1].permute(1, 0, 2).reshape(B, -1, 64, 64) 
                 vision_feats_temp = vision_feats_temp.reshape(B, -1)
 
                 image_embed_stack_ori = F.normalize(image_embed_stack_ori, p=2, dim=1)
