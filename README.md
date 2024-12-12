@@ -74,10 +74,10 @@ We released our pretrain weight [here](https://huggingface.co/jiayuanz3/MedSAM2_
 
 ## 📝 Cite
  ~~~
-@misc{zhu_medical_2024,
-	title={Medical SAM 2: Segment medical images as video via Segment Anything Model 2},
-    author={Jiayuan Zhu and Yunli Qi and Junde Wu},
-    year = {2024},
+@misc{zhu2024medical,
+    title={Medical SAM 2: Segment medical images as video via Segment Anything Model 2},
+    author={Jiayuan Zhu and Abdullah Hamdi and Yunli Qi and Yueming Jin and Junde Wu},
+    year={2024},
     eprint={2408.00874},
     archivePrefix={arXiv},
     primaryClass={cs.CV}
