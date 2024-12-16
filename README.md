@@ -65,6 +65,7 @@ We released our pretrain weight [here](https://huggingface.co/jiayuanz3/MedSAM2_
 
 
 ## 🚨 News
+- 24-12-04. Our Medical SAM 2 paper was updated on Arxiv with new insights and results
 - 24-08-05. Our Medical SAM 2 paper **ranked #1 Paper of the day** collected by AK on Hugging Face 🤗
 - 24-08-05. Update 3D example details and pre-processed BTCV dataset download link 🔗
 - 24-08-05. Update 2D example details and pre-processed REFUGE dataset download link 🔗
