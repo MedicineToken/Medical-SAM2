@@ -15,6 +15,10 @@ image segmentation tasks. This method is elaborated on the paper [Medical SAM 2:
 ## 🩻 3D Abdomen Segmentation Visualisation
  <div align="center"><img width="420" height="420" src="https://github.com/MedicineToken/Medical-SAM2/blob/main/vis/example.gif"></div>
 
+## Pre-trained weight
+
+We released our pretrain weight [here](https://huggingface.co/jiayuanz3/MedSAM2_pretrain/tree/main)
+
 ## 🧐 Requirement
 
  Install the environment:
@@ -33,7 +37,6 @@ Operating System: Ubuntu 22.04
 Conda Version: 23.7.4
 Python Version: 3.12.4
 ```
-We released our pretrain weight [here](https://huggingface.co/jiayuanz3/MedSAM2_pretrain/tree/main)
 
  ## 🎯 Example Cases
  #### Download REFUGE or BCTV or your own dataset and put in the ``data`` folder, create the folder if it does not exist ⚒️
